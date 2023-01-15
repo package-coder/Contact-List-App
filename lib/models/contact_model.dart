@@ -63,8 +63,8 @@ class Contact {
     var database = await DBHelper.instance.database;
     var contacts = await database.query(
         'contacts',
-        where: 'isBlocked = ?',
-        whereArgs: [1],
+        where: 'isBlocked = ? AND isArchived = ?',
+        whereArgs: [1, 0],
         orderBy: 'name'
     );
 
