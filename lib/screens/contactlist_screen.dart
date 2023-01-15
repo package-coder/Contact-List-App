@@ -120,44 +120,54 @@ class _ContactListScreenState extends State<ContactListScreen> with TickerProvid
                     ? const Center(child: CircularProgressIndicator())
                     : _contactList.isEmpty ? const Center(child: Text('No contacts'))
                     : ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
                   itemCount: _contactList.length,
                   itemBuilder: (context, index) {
                     var contact = _contactList[index];
-                    return ListTile(
-                      onTap: () {},
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      leading: contact.imagePath != ''
-                          ? Container(
-                        height: 50.0,
-                        width: 50.0,
-                        clipBehavior: Clip.hardEdge,
-                        decoration:  const BoxDecoration(
-                            shape: BoxShape.circle
+                    return Card(
+                      child: ListTile(
+                        onTap: () {
+                          Modular.to.pushNamed('/contact-item-screen/${contact.id}')
+                              .then((value) => {
+                            if(value == true)
+                              _refetchList()
+                          })
+                              .onError((error, stackTrace) => { print('$error, $stackTrace') });
+                        },
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        leading: contact.imagePath != ''
+                            ? Container(
+                          height: 50.0,
+                          width: 50.0,
+                          clipBehavior: Clip.hardEdge,
+                          decoration:  const BoxDecoration(
+                              shape: BoxShape.circle
+                          ),
+                          child: Image.file(
+                            File(contact.imagePath),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                            : CircleAvatar(
+                          backgroundColor: Colors.grey,
+                          radius: 25.0,
+                          child: Text(contact.name[0].toUpperCase()),
                         ),
-                        child: Image.file(
-                          File(contact.imagePath),
-                          fit: BoxFit.cover,
+                        title: Text(contact.name),
+                        subtitle: Text(contact.mobileNumber),
+                        trailing: IconButton(
+                            onPressed: () {
+                              _handleAddToFavorite(contact.id, contact);
+                            },
+                            iconSize: 22,
+                            tooltip: 'Mark as favorite',
+                            icon: Icon(
+                              contact.isFavorite
+                                  ? Icons.star
+                                  : Icons.star_border_outlined,
+                              color: Colors.grey,
+                            )
                         ),
-                      )
-                          : CircleAvatar(
-                        backgroundColor: Colors.grey,
-                        radius: 25.0,
-                        child: Text(contact.name[0].toUpperCase()),
-                      ),
-                      title: Text(contact.name),
-                      subtitle: Text(contact.mobileNumber),
-                      trailing: IconButton(
-                          onPressed: () {
-                            _handleAddToFavorite(contact.id, contact);
-                          },
-                          iconSize: 22,
-                          tooltip: 'Mark as favorite',
-                          icon: Icon(
-                            contact.isFavorite
-                                ? Icons.star
-                                : Icons.star_border_outlined,
-                            color: Colors.grey,
-                          )
                       ),
                     );
                   },

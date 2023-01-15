@@ -41,6 +41,21 @@ class Contact {
     return contactList;
   }
 
+  static Future<Contact?> getContactById(int id) async {
+    var database = await DBHelper.instance.database;
+    var contacts = await database.query(
+        'contacts',
+        where: 'id = ?',
+        whereArgs: [id],
+    );
+
+    Contact? contact = contacts.isNotEmpty
+        ? Contact.fromMap(contacts.first)
+        : null;
+
+    return contact;
+  }
+
   static Future<List<Contact>> filterAllBlocked() async {
     var database = await DBHelper.instance.database;
     var contacts = await database.query(
@@ -55,7 +70,6 @@ class Contact {
         .toList()
         : [];
 
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $contactList');
     return contactList;
   }
 

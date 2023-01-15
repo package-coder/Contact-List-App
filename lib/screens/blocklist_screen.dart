@@ -37,8 +37,8 @@ class _BlockListScreenState extends State<BlockListScreen> with TickerProviderSt
   }
 
 
-  void _handleAddToFavorite(int? id, Contact contact) {
-    Contact.findIdAndUpdate(id, { 'isFavorite': contact.isFavorite ? 0 : 1 })
+  void _handleActionClick(int? id, Contact contact) {
+    Contact.findIdAndUpdate(id, { 'isBlocked': contact.isBlocked ? 0 : 1 })
         .then((value) => {
       Contact.filterAllBlocked()
           .then((value) =>
@@ -85,7 +85,7 @@ class _BlockListScreenState extends State<BlockListScreen> with TickerProviderSt
                 subtitle: Text(contact.mobileNumber),
                 trailing: IconButton(
                     onPressed: () {
-                      _handleAddToFavorite(contact.id, contact);
+                      _handleActionClick(contact.id, contact);
                     },
                     iconSize: 22,
                     tooltip: 'Block',
