@@ -48,7 +48,7 @@ class _AddContactScreenState extends State<AddContactScreen> with TickerProvider
         imagePath: _image != null ? _image!.path : '',
         name: _name.text,
         mobileNumber: _mobileNumber.text,
-        isBlacklist: _addToBlackList,
+        isBlocked: _addToBlackList,
         isFavorite: _addToFavorites,
     );
 
@@ -61,6 +61,7 @@ class _AddContactScreenState extends State<AddContactScreen> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -132,7 +133,7 @@ class _AddContactScreenState extends State<AddContactScreen> with TickerProvider
                           children: [
                             const Text('Mobile Number', style: TextStyle(fontWeight: FontWeight.bold)),
                             TextFormField(
-                              validator: (value) {
+                              validator:  (value) {
                                 if(value == null || value.isEmpty) {
                                   return 'This field is required';
                                 }
@@ -142,6 +143,7 @@ class _AddContactScreenState extends State<AddContactScreen> with TickerProvider
                                 if(!value.startsWith('09')){
                                   return 'Mobile number must start with 09';
                                 }
+
                                 return null;
                               },
                               controller: _mobileNumber,
@@ -177,7 +179,7 @@ class _AddContactScreenState extends State<AddContactScreen> with TickerProvider
                               setState(() => _addToBlackList = !_addToBlackList);
                             },
                             icon: Icon(_addToBlackList ? Icons.lock : Icons.lock_open_outlined),
-                            label: Text(_addToBlackList ? 'Remove from blacklist' : 'Add to blacklist')
+                            label: Text(_addToBlackList ? 'Remove from blacklist' : 'Add to blocklist')
                         )
                       ],
                     )

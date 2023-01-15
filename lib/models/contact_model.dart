@@ -8,7 +8,8 @@ class Contact {
   final String name;
   final String mobileNumber;
   final bool isFavorite;
-  final bool isBlacklist;
+  final bool isBlocked;
+  final bool isArchived;
   final String imagePath;
 
 
@@ -18,17 +19,58 @@ class Contact {
     required this.name,
     required this.mobileNumber,
     this.isFavorite = false,
-    this.isBlacklist = false
+    this.isBlocked = false,
+    this.isArchived = false,
   });
 
-  static Future<List<Contact>> getAll() async {
+  static Future<List<Contact>> getContactList() async {
     var database = await DBHelper.instance.database;
-    var contacts = await database.query('contacts', orderBy: 'isFavorite' );
+    var contacts = await database.query(
+        'contacts',
+        where: 'isBlocked = ?',
+        whereArgs: [0],
+        orderBy: 'isFavorite'
+    );
 
     List<Contact> contactList = contacts.isNotEmpty
         ? contacts.reversed
                 .map((e) => Contact.fromMap(e))
                 .toList()
+        : [];
+
+    return contactList;
+  }
+
+  static Future<List<Contact>> filterAllBlocked() async {
+    var database = await DBHelper.instance.database;
+    var contacts = await database.query(
+        'contacts',
+        where: 'isBlocked = ?',
+        whereArgs: [1]
+    );
+
+    List<Contact> contactList = contacts.isNotEmpty
+        ? contacts.reversed
+        .map((e) => Contact.fromMap(e))
+        .toList()
+        : [];
+
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $contactList');
+    return contactList;
+  }
+
+  static Future<List<Contact>> filterAllArchived() async {
+    var database = await DBHelper.instance.database;
+    var contacts = await database.query(
+        'contacts',
+        where: 'isArchived = ?',
+        whereArgs: [1]
+    );
+
+    List<Contact> contactList = contacts.isNotEmpty
+        ? contacts.reversed
+        .map((e) => Contact.fromMap(e))
+        .toList()
         : [];
 
     return contactList;
@@ -59,20 +101,35 @@ class Contact {
     return contactList;
   }
 
-  // static Future<List<Contact>> contains(Map<String, dynamic> json) async {
-  //   var database = await DBHelper.instance.database;
-  //   var contacts = await database.query(
-  //       'contacts',
-  //       where: 'name LIKE ?% AND mobileNumber LIKE ?%',
-  //       whereArgs: [query, query]
-  //   );
-  //
-  //   List<Contact> contactList = contacts.isNotEmpty
-  //       ? contacts.map((e) => Contact.fromMap(e))
-  //       .toList()
-  //       : [];
-  //   return contactList;
-  // }
+  static Future<List<Contact>> findByName(String query) async {
+    var database = await DBHelper.instance.database;
+    var contacts = await database.query(
+        'contacts',
+        where: 'name = ?',
+        whereArgs: [query]
+    );
+
+    List<Contact> contactList = contacts.isNotEmpty
+        ? contacts.map((e) => Contact.fromMap(e))
+        .toList()
+        : [];
+    return contactList;
+  }
+
+  static Future<List<Contact>> findByNumber(String query) async {
+    var database = await DBHelper.instance.database;
+    var contacts = await database.query(
+        'contacts',
+        where: 'mobileNumber = ?',
+        whereArgs: [query]
+    );
+
+    List<Contact> contactList = contacts.isNotEmpty
+        ? contacts.map((e) => Contact.fromMap(e))
+        .toList()
+        : [];
+    return contactList;
+  }
 
   static Future<int> save(Contact contact) async {
     if(contact.id != null) {
@@ -90,7 +147,8 @@ class Contact {
       'name': name,
       'mobileNumber': mobileNumber,
       'isFavorite': isFavorite ? 1 : 0,
-      'isBlacklist': isBlacklist ? 1 : 0,
+      'isBlocked': isBlocked ? 1 : 0,
+      'isArchived': isArchived ? 1 : 0
     };
   }
 
@@ -100,7 +158,8 @@ class Contact {
     imagePath: json['imagePath'],
     mobileNumber: json['mobileNumber'],
     isFavorite: json['isFavorite'] == 1,
-    isBlacklist: json['isBlacklist'] == 1,
+    isBlocked: json['isBlocked'] == 1,
+      isArchived: json['isArchived'] == 1,
   );
 
   @override
@@ -111,7 +170,8 @@ class Contact {
         'name: $name, '
         'mobileNumber: $mobileNumber, '
         'isFavorite: $isFavorite, '
-        'isBlacklist: $isBlacklist'
+        'isBlocked: $isBlocked, '
+        'isArchived: $isArchived'
         '}';
   }
 }

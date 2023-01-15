@@ -13,6 +13,7 @@ class DBHelper {
 
   Future<Database> _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    print(documentsDirectory.path);
     String path = join(documentsDirectory.path, 'contacts.db');
     return await openDatabase(
       path,
@@ -29,7 +30,8 @@ class DBHelper {
           name TEXT NOT NULL,
           mobileNumber TEXT NOT NULL,
           isFavorite INTEGER,
-          isBlacklist INTEGER
+          isBlocked INTEGER,
+          isArchived INTEGER
       )
       ''');
   }
