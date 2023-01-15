@@ -50,6 +50,7 @@ class _AddContactScreenState extends State<AddContactScreen> with TickerProvider
         mobileNumber: _mobileNumber.text,
         isBlocked: _addToBlackList,
         isFavorite: _addToFavorites,
+        isArchived: false
     );
 
     Contact.save(contact)

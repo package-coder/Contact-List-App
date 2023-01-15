@@ -27,18 +27,20 @@ class Contact {
     var database = await DBHelper.instance.database;
     var contacts = await database.query(
         'contacts',
-        where: 'isBlocked = ?',
-        whereArgs: [0],
-        orderBy: 'isFavorite'
+        where: 'isBlocked = ? AND isArchived = ?',
+        whereArgs: [0, 0],
+        orderBy: 'name, isFavorite'
     );
 
     List<Contact> contactList = contacts.isNotEmpty
-        ? contacts.reversed
-                .map((e) => Contact.fromMap(e))
-                .toList()
+        ? contacts.map((e) => Contact.fromMap(e)).toList()
         : [];
 
-    return contactList;
+    List<Contact> favorites = contactList.where((element) => element.isFavorite).toList();
+    contactList = contactList.where((element) => !element.isFavorite).toList();
+
+    favorites.addAll(contactList);
+    return favorites;
   }
 
   static Future<Contact?> getContactById(int id) async {
@@ -47,6 +49,7 @@ class Contact {
         'contacts',
         where: 'id = ?',
         whereArgs: [id],
+        orderBy: 'name'
     );
 
     Contact? contact = contacts.isNotEmpty
@@ -61,7 +64,8 @@ class Contact {
     var contacts = await database.query(
         'contacts',
         where: 'isBlocked = ?',
-        whereArgs: [1]
+        whereArgs: [1],
+        orderBy: 'name'
     );
 
     List<Contact> contactList = contacts.isNotEmpty
@@ -105,7 +109,8 @@ class Contact {
     var contacts = await database.query(
         'contacts',
         where: 'name LIKE ? OR mobileNumber LIKE ?',
-        whereArgs: ['$query%', '$query%']
+        whereArgs: ['$query%', '$query%'],
+        orderBy: 'name'
     );
 
     List<Contact> contactList = contacts.isNotEmpty

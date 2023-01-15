@@ -26,6 +26,7 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
   bool _isLoading = false;
   bool _isFavorite = false;
   bool _isBlocked = false;
+  bool  _isArchived = false;
   final _name = TextEditingController();
   final _mobileNumber = TextEditingController();
 
@@ -38,11 +39,11 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
   void initState() {
     super.initState();
     var args = Modular.args;
-    print(args.params);
     getData(int.parse(args.params['id']));
   }
 
   void getData(int id) {
+    setState(() => _isLoading = true);
     Contact.getContactById(id)
       .then((value) => {
         setState(() {
@@ -52,9 +53,11 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
             _mobileNumber.text = value.mobileNumber;
             _isFavorite = value.isFavorite;
             _isBlocked = value.isBlocked;
+            _isArchived = value.isArchived;
           }
         })
-      });
+      }).catchError((error) => print(error))
+        .whenComplete(() => setState(() => _isLoading = false));
   }
 
   void _onSubmit() async {
@@ -71,6 +74,7 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
       'mobileNumber': _mobileNumber.text,
       'isBlocked': _isBlocked ? 1 : 0,
       'isFavorite': _isFavorite ? 1 : 0,
+      'isArchived': _isArchived ? 1 : 0
     };
 
     Contact.findIdAndUpdate(_contact!.id, contact)
@@ -82,14 +86,6 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    if(_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if(_contact == null) {
-      return const Center(child: Text('Contact not found'));
-    }
-
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -101,7 +97,11 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
           ),
           title: const Text('Update Contact'),
         ),
-        body: Form(
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _contact == null
+            ? const Center(child: Text('Contact not found'))
+            : Form(
             key: _formKey,
             child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -208,6 +208,13 @@ class _ContactItemScreenState extends State<ContactItemScreen> with TickerProvid
                             },
                             icon: Icon(_isBlocked ? Icons.lock : Icons.lock_open_outlined),
                             label: Text(_isBlocked ? 'Remove from blacklist' : 'Add to blocklist')
+                        ),
+                        TextButton.icon(
+                            onPressed: (){
+                              setState(() => _isArchived = !_isArchived);
+                            },
+                            icon: Icon(_isArchived ? Icons.archive : Icons.archive_outlined),
+                            label: Text(_isArchived ? 'Remove from archive' : 'Move to archive')
                         )
                       ],
                     )

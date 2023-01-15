@@ -15,15 +15,12 @@ class BlockListScreen extends StatefulWidget {
 
 
 class _BlockListScreenState extends State<BlockListScreen> with TickerProviderStateMixin {
-  late TabController _tabController;
   List<Contact> _contactList = [];
   bool _loading = false;
-  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _refetchList();
   }
 
@@ -56,48 +53,61 @@ class _BlockListScreenState extends State<BlockListScreen> with TickerProviderSt
           child:  _loading
               ? const Center(child: CircularProgressIndicator())
               : _contactList.isEmpty ? const Center(child: Text('No contacts'))
-              : ListView.builder(
-            itemCount: _contactList.length,
-            itemBuilder: (context, index) {
-              var contact = _contactList[index];
-              return ListTile(
-                onTap: () {},
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                leading: contact.imagePath != ''
-                    ? Container(
-                  height: 50.0,
-                  width: 50.0,
-                  clipBehavior: Clip.hardEdge,
-                  decoration:  const BoxDecoration(
-                      shape: BoxShape.circle
-                  ),
-                  child: Image.file(
-                    File(contact.imagePath),
-                    fit: BoxFit.cover,
-                  ),
-                )
-                    : CircleAvatar(
-                  backgroundColor: Colors.grey,
-                  radius: 25.0,
-                  child: Text(contact.name[0].toUpperCase()),
-                ),
-                title: Text(contact.name),
-                subtitle: Text(contact.mobileNumber),
-                trailing: IconButton(
-                    onPressed: () {
-                      _handleActionClick(contact.id, contact);
+              : Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              itemCount: _contactList.length,
+              itemBuilder: (context, index) {
+                var contact = _contactList[index];
+                return Card(
+                  child: ListTile(
+                    onTap: () {
+                      Modular.to.pushNamed('/contact-item-screen/${contact.id}')
+                          .then((value) => {
+                        if(value == true)
+                          _refetchList()
+                      })
+                          .onError((error, stackTrace) => { print('$error, $stackTrace') });
                     },
-                    iconSize: 22,
-                    tooltip: 'Block',
-                    icon: Icon(
-                      contact.isBlocked
-                          ? Icons.lock
-                          : Icons.lock_open_outlined,
-                      color: Colors.grey,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    leading: contact.imagePath != ''
+                        ? Container(
+                      height: 50.0,
+                      width: 50.0,
+                      clipBehavior: Clip.hardEdge,
+                      decoration:  const BoxDecoration(
+                          shape: BoxShape.circle
+                      ),
+                      child: Image.file(
+                        File(contact.imagePath),
+                        fit: BoxFit.cover,
+                      ),
                     )
-                ),
-              );
-            },
+                        : CircleAvatar(
+                      backgroundColor: Colors.grey,
+                      radius: 25.0,
+                      child: Text(contact.name[0].toUpperCase()),
+                    ),
+                    title: Text(contact.name),
+                    subtitle: Text(contact.mobileNumber),
+                    trailing: IconButton(
+                        onPressed: () {
+                          _handleActionClick(contact.id, contact);
+                        },
+                        iconSize: 22,
+                        tooltip: 'Block',
+                        icon: Icon(
+                          contact.isBlocked
+                              ? Icons.lock
+                              : Icons.lock_open_outlined,
+                          color: Colors.grey,
+                        )
+                    ),
+                  ),
+                );
+              },
+            ),
           )
       ),
       floatingActionButton: FloatingActionButton(

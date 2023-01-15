@@ -20,12 +20,16 @@ class _ContactListScreenState extends State<ContactListScreen> with TickerProvid
   List<Contact> _contactList = [];
   bool _loading = false;
   Timer? _debounce;
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _refetchList();
+    _searchController.addListener(() {
+      _handleSearch(_searchController.text);
+    });
   }
 
   @override
@@ -43,7 +47,7 @@ class _ContactListScreenState extends State<ContactListScreen> with TickerProvid
   }
 
   void _handleSearch(String value) {
-    setState(() { _loading = true; });
+    setState(() => _loading = true);
 
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 1000), () {
@@ -78,24 +82,36 @@ class _ContactListScreenState extends State<ContactListScreen> with TickerProvid
         child:Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: TextFormField(
+                controller: _searchController,
                 validator: (value) {
                   if (!(value == null || value.isEmpty)) {
                     return null;
                   }
                   return 'This field is required';
                 },
-                onChanged: _handleSearch,
+                // onChanged: _handleSearch,
                 keyboardType: TextInputType.name,
                 decoration:  InputDecoration(
+                    suffixIcon: (_searchController.text != '') ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _searchController.text = '';
+                          _refetchList();
+                        });
+                      },
+                      padding: EdgeInsets.zero,
+                      icon:  const Icon(Icons.close),
+                      color: Colors.grey
+                    ) : null,
                     hintText: 'Search by name or phone number',
                     hintStyle: TextStyle(
                         fontSize: Theme.of(context).textTheme.button?.fontSize,
                         color: Colors.grey.shade400
                     ),
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
                     fillColor: Colors.grey.shade200,
                     border: OutlineInputBorder(
                         borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -120,7 +136,7 @@ class _ContactListScreenState extends State<ContactListScreen> with TickerProvid
                     ? const Center(child: CircularProgressIndicator())
                     : _contactList.isEmpty ? const Center(child: Text('No contacts'))
                     : ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   itemCount: _contactList.length,
                   itemBuilder: (context, index) {
                     var contact = _contactList[index];
@@ -162,9 +178,13 @@ class _ContactListScreenState extends State<ContactListScreen> with TickerProvid
                             iconSize: 22,
                             tooltip: 'Mark as favorite',
                             icon: Icon(
-                              contact.isFavorite
-                                  ? Icons.star
-                                  : Icons.star_border_outlined,
+                              contact.isArchived
+                              ? Icons.archive
+                              : contact.isBlocked
+                              ? Icons.lock
+                              : contact.isFavorite
+                              ? Icons.star
+                              : Icons.star_border_outlined,
                               color: Colors.grey,
                             )
                         ),
